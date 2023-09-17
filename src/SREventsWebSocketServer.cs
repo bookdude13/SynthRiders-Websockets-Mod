@@ -21,7 +21,7 @@ namespace SynthRidersWebsockets
         protected override void HandleReceive(string clientId, string message)
         {
             // No server-side behaviors from sent messages at this time, so just log it if it happens
-            logger.Msg($"Client {clientId} received message '{message}'");
+            logger.Msg($"Server received message '{message}' from client '{clientId}'");
         }
 
         public void QueueMessage(string message)

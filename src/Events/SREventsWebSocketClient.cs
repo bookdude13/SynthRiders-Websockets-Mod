@@ -9,7 +9,7 @@ using Newtonsoft.Json;
 
 namespace SynthRidersWebsockets.Events
 {
-    internal class SREventsWebSocketClient : AbstractWebSocketClient
+    public class SREventsWebSocketClient : AbstractWebSocketClient
     {
         ISynthRidersEventHandler eventHandler;
 
@@ -21,7 +21,7 @@ namespace SynthRidersWebsockets.Events
 
         protected override void HandleReceive(string messageJson)
         {
-            logger.Msg("Received message");
+            //logger.Msg("Received message");
             try
             {
                 // Parse top layer as generic to get type, then parse the specific message data if needed.

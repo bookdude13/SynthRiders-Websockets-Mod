@@ -21,6 +21,7 @@ using SynthRidersWebsockets.Harmony;
 using SynthRidersWebsockets.Events;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.DependencyInjection;
+using System.Threading;
 
 /*
 * Todo:
@@ -38,8 +39,8 @@ namespace SynthRidersWebsockets
 
         public static WebsocketMod Instance;
         private static GameControlManager gameControlManager;
-        //private static SignalR_SREventsWebSocketServer webSocketServer;
-        SREventsWebSocketServer webSocketServer;
+        private static SREventsWebSocketServer webSocketServer;
+        private static SREventsWebSocketClient testClient;
         private static IHost server;
 
         public static MelonPreferences_Category connectionCategory;
@@ -50,7 +51,7 @@ namespace SynthRidersWebsockets
         private float lastPlayTimeEventMS = 0;
         private float currentPlayTimeMS = 0.0f;
 
-        public override async void OnInitializeMelon() {
+        public override void OnInitializeMelon() {
             Instance = this;
             connectionCategory = MelonPreferences.CreateCategory("Connection");
             string host = connectionCategory.CreateEntry<string>("Host", "localhost").Value;
@@ -61,6 +62,7 @@ namespace SynthRidersWebsockets
 
             LoggerInstance.Msg("[Websocket] Starting Websocket server");
             webSocketServer = new SREventsWebSocketServer(LoggerInstance, host, port);
+
             HostBuilder builder = new();
             builder.UseContentRoot(Directory.GetCurrentDirectory());
             server = builder
@@ -75,15 +77,17 @@ namespace SynthRidersWebsockets
                     {
                         services.AddHostedService(provider =>
                         {
-                            return new SREventsWebSocketClient(LoggerInstance, host, port, eventHandler);
+                            return testClient;
                         });
                     }
                 })
                 .Build();
 
-            await server.RunAsync();
+            // Kick off server in background
+            _ = server.RunAsync();
 
             // Patch _after_ the server is started and can handle messages
+            LoggerInstance.Msg("Applying Harmony patches");
             RuntimePatch.PatchAll();
         }
 

@@ -50,6 +50,7 @@ namespace SynthRidersWebsockets
                 // Set up sending to all connections
                 _ = Task.Run(async () => await SendAllLoop(cancellationToken));
 
+                logger.Msg("Done setting up server");
                 return Task.CompletedTask;
             }
             catch (Exception ex)
@@ -104,12 +105,12 @@ namespace SynthRidersWebsockets
             {
                 try
                 {
-                    logger.Msg("Waiting for message");
+                    //logger.Msg("Waiting for message");
 
                     // Wait until we have a message to send
                     sendWait.WaitOne();
 
-                    logger.Msg("Sending messages");
+                    //logger.Msg("Sending messages");
                     // Send all available messages
                     while (true)
                     {
@@ -124,7 +125,7 @@ namespace SynthRidersWebsockets
                         {
                             foreach (var client in clients)
                             {
-                                logger.Msg($"Sending message to client {client.Key}");
+                                //logger.Msg($"Sending message to client {client.Key}");
                                 await SendToClient(client.Key, nextMessage, cancellationToken);
                             }
                         }

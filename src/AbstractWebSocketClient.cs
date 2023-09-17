@@ -11,7 +11,7 @@ using EventWaitHandle = System.Threading.EventWaitHandle;
 namespace SynthRidersWebsockets
 {
     // Heavily inspired by https://stackoverflow.com/questions/30490140/how-to-work-with-system-net-websockets-without-asp-net
-    internal abstract class AbstractWebSocketClient : IHostedService
+    public abstract class AbstractWebSocketClient : IHostedService
     {
         protected readonly MelonLogger.Instance logger;
         protected bool isConnected = false;
@@ -78,7 +78,7 @@ namespace SynthRidersWebsockets
 
         public async Task StopAsync(CancellationToken cancellationToken)
         {
-            logger.Msg("Stopping websocket server...");
+            logger.Msg("Stopping websocket client...");
             if (client == null)
             {
                 await Task.CompletedTask;
@@ -98,7 +98,7 @@ namespace SynthRidersWebsockets
             }
             catch (Exception ex)
             {
-                logger.Error($"Failed to stop websocket server!", ex);
+                logger.Error($"Failed to stop websocket client!", ex);
                 await Task.FromException(ex);
             }
         }
