@@ -1,17 +1,15 @@
-﻿/*using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Il2CppSystem.Threading;
 using MelonLoader;
-using Microsoft.AspNetCore.SignalR;
-using Microsoft.AspNetCore.SignalR.Client;
 using Newtonsoft.Json;
 
 namespace SynthRidersWebsockets.Events
 {
-    internal class SREventsWebSocketClient : AbstractSRWebSocketCommon
+    internal class SREventsWebSocketClient : AbstractWebSocketClient
     {
         ISynthRidersEventHandler eventHandler;
 
@@ -19,11 +17,11 @@ namespace SynthRidersWebsockets.Events
             : base(logger, host, port)
         {
             this.eventHandler = eventHandler;
-            connection.On<string>(SignalR_SREventsWebSocketServer.EventMessageChannelName, ReceiveMessage);
         }
 
-        public void ReceiveMessage(string messageJson)
+        protected override void HandleReceive(string messageJson)
         {
+            logger.Msg("Received message");
             try
             {
                 // Parse top layer as generic to get type, then parse the specific message data if needed.
@@ -70,4 +68,3 @@ namespace SynthRidersWebsockets.Events
         }
     }
 }
-*/

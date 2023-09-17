@@ -9,11 +9,11 @@ using MelonLoader;
 
 namespace SynthRidersWebsockets
 {
-    internal class Raw_SREventsWebSocketServer : WebSocketServer
+    internal class SREventsWebSocketServer : AbstractWebSocketServer
     {
         private readonly ConcurrentQueue<string> messagesToSend = new();
 
-        public Raw_SREventsWebSocketServer(MelonLogger.Instance logger, string host, int port)
+        public SREventsWebSocketServer(MelonLogger.Instance logger, string host, int port)
             : base(logger, host, port)
         {
         }
@@ -26,6 +26,8 @@ namespace SynthRidersWebsockets
 
         public void QueueMessage(string message)
         {
+            logger.Msg("QueueMessage server");
+
             messagesToSend.Enqueue(message);
 
             // Let the sender pick it up

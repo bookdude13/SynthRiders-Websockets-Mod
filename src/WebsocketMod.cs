@@ -37,7 +37,7 @@ namespace SynthRidersWebsockets
         public static WebsocketMod Instance;
         private static GameControlManager gameControlManager;
         //private static SignalR_SREventsWebSocketServer webSocketServer;
-        Raw_SREventsWebSocketServer webSocketServer;
+        SREventsWebSocketServer webSocketServer;
         private static IHost server;
 
         public static MelonPreferences_Category connectionCategory;
@@ -54,21 +54,28 @@ namespace SynthRidersWebsockets
             string host = connectionCategory.CreateEntry<string>("Host", "localhost").Value;
             int port = connectionCategory.CreateEntry<int>("Port", 9000).Value;
 
+            // TODO remove, just for testing
+            var eventHandler = new LoggingSynthRidersEventHandler(LoggerInstance);
+
             LoggerInstance.Msg("[Websocket] Starting Websocket server");
+            webSocketServer = new SREventsWebSocketServer(LoggerInstance, host, port);
             HostBuilder builder = new();
             builder.UseContentRoot(Directory.GetCurrentDirectory());
             server = builder
                 .ConfigureServices(services =>
                 {
-                    services.AddHostedService<Raw_SREventsWebSocketServer>(provider =>
+                    services.AddHostedService(provider =>
                     {
-                        return new Raw_SREventsWebSocketServer(LoggerInstance, host, port);
+                        return webSocketServer;
+                    });
+                    services.AddHostedService(provider =>
+                    {
+                        return new SREventsWebSocketClient(LoggerInstance, host, port, eventHandler);
                     });
                 })
                 .Build();
 
             await server.RunAsync();
-            webSocketServer = server.Services.GetService<Raw_SREventsWebSocketServer>();
 
             /*webSocketServer = new SREventsWebSocketServer(LoggerInstance, host, port);
             await webSocketServer.StartAsync();*/

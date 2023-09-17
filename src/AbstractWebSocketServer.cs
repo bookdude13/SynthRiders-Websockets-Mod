@@ -11,7 +11,7 @@ using EventWaitHandle = System.Threading.EventWaitHandle;
 namespace SynthRidersWebsockets
 {
     // Heavily inspired by https://stackoverflow.com/questions/30490140/how-to-work-with-system-net-websockets-without-asp-net
-    internal abstract class WebSocketServer : IHostedService
+    internal abstract class AbstractWebSocketServer : IHostedService
     {
         protected readonly MelonLogger.Instance logger;
         protected bool isConnected = false;
@@ -20,61 +20,74 @@ namespace SynthRidersWebsockets
         private readonly string url;
         private readonly HttpListener httpListener;
 
-        public WebSocketServer(MelonLogger.Instance logger, string host, int port)
+        public AbstractWebSocketServer(MelonLogger.Instance logger, string host, int port)
         {
             this.logger = logger;
 
             url = $"http://{host}:{port}/";
             httpListener = new();
             httpListener.Prefixes.Add(url);
+            logger.Msg($"Listener created for '{url}'");
         }
 
-        public async Task StartAsync(CancellationToken cancellationToken)
+        public Task StartAsync(CancellationToken cancellationToken)
         {
             try
             {
                 logger.Msg("Starting http listener...");
                 httpListener.Start();
                 logger.Msg("Started");
-                while (!cancellationToken.IsCancellationRequested)
+
+                var _ = Task.Run(async () =>
                 {
-                    var context = await httpListener.GetContextAsync()
-                        .WithCancellationToken(cancellationToken);
-                    if (context is null)
-                    {
-                        logger.Warning("Null listener context; exiting main loop");
-                        return;
-                    }
+                    await ConnectionLoop(cancellationToken);
+                }, cancellationToken);
 
-                    if (!context.Request.IsWebSocketRequest)
-                    {
-                        logger.Warning("Not a websocket request; ignoring");
-                        context.Response.Abort();
-                    }
-                    else
-                    {
-                        logger.Msg("Accepting websocket request");
-                        var webSocketContext = await context.AcceptWebSocketAsync(subProtocol: null)
-                            .WithCancellationToken(cancellationToken);
-
-                        if (webSocketContext is null)
-                        {
-                            logger.Warning("Websocket context is null, cannot connect");
-                            continue;
-                        }
-
-                        string clientId = Guid.NewGuid().ToString();
-                        WebSocket webSocket = webSocketContext.WebSocket;
-
-                        logger.Msg($"Starting handlers for new client {clientId}");
-                        _ = Task.Run(async () => await SendLoop(clientId, webSocket, cancellationToken));
-                        _ = Task.Run(async () => await ReceiveLoop(clientId, webSocket, cancellationToken));
-                    }
-                }
+                return Task.CompletedTask;
             }
             catch (Exception ex)
             {
                 logger.Error($"Failed to start websocket at {url}", ex);
+                return Task.FromException(ex);
+            }
+        }
+
+        private async Task ConnectionLoop(CancellationToken cancellationToken)
+        {
+            while (!cancellationToken.IsCancellationRequested)
+            {
+                var context = await httpListener.GetContextAsync()
+                    .WithCancellationToken(cancellationToken);
+                if (context is null)
+                {
+                    logger.Warning("Null listener context; exiting main loop");
+                    return;
+                }
+
+                if (!context.Request.IsWebSocketRequest)
+                {
+                    logger.Warning("Not a websocket request; ignoring");
+                    context.Response.Abort();
+                }
+                else
+                {
+                    logger.Msg("Accepting websocket request");
+                    var webSocketContext = await context.AcceptWebSocketAsync(subProtocol: null)
+                        .WithCancellationToken(cancellationToken);
+
+                    if (webSocketContext is null)
+                    {
+                        logger.Warning("Websocket context is null, cannot connect");
+                        continue;
+                    }
+
+                    string clientId = Guid.NewGuid().ToString();
+                    WebSocket webSocket = webSocketContext.WebSocket;
+
+                    logger.Msg($"Starting server handlers for new client {clientId}");
+                    _ = Task.Run(async () => await SendLoop(clientId, webSocket, cancellationToken));
+                    _ = Task.Run(async () => await ReceiveLoop(clientId, webSocket, cancellationToken));
+                }
             }
         }
 
@@ -84,9 +97,12 @@ namespace SynthRidersWebsockets
             {
                 try
                 {
+                    logger.Msg("Waiting for message");
+
                     // Wait until we have a message to send
                     sendWait.WaitOne();
 
+                    logger.Msg("Sending messages");
                     // Send all available messages
                     while (true)
                     {
@@ -94,12 +110,12 @@ namespace SynthRidersWebsockets
                         if (nextMessage == null)
                         {
                             sendWait.Reset();
-                            logger.Msg($"No more messages to send");
+                            //logger.Msg($"No more messages to send");
                             break;
                         }
                         else
                         {
-                            logger.Msg($"Sending message '{nextMessage}' to client {clientId}");
+                            //logger.Msg($"Sending message '{nextMessage}' to client {clientId}");
                             await webSocket.SendAsync(
                                 Encoding.ASCII.GetBytes(nextMessage),
                                 WebSocketMessageType.Text,
