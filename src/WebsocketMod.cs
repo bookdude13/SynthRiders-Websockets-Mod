@@ -174,11 +174,18 @@ namespace SynthRidersWebsockets
                 albumArtEncoded = "data:image/png;base64," + System.Convert.ToBase64String(File.ReadAllBytes(albumArtPath));
             }
 
+            var info = GameControlManager.s_instance.InfoProvider;
+            if (info == null)
+            {
+                LoggerInstance.Msg("Null info provider, skipping OnSongStart");
+                return;
+            }
+
             EventDataSongStart songStartEvent = new EventDataSongStart(
-                GameControlManager.s_instance.InfoProvider.TrackName,
-                GameControlManager.s_instance.InfoProvider.CurrentDifficulty.ToString(),
-                GameControlManager.s_instance.InfoProvider.Author,
-                GameControlManager.s_instance.InfoProvider.Beatmapper,
+                info.TrackName,
+                info.CurrentDifficulty.ToString(),
+                info.Author,
+                info.Beatmapper,
                 GameControlManager.CurrentTrackStatic.Song.clip.length,
                 GameControlManager.CurrentTrackStatic.TrackBPM,
                 albumArtEncoded
@@ -189,13 +196,26 @@ namespace SynthRidersWebsockets
 
         private void OnSongEnd()
         {
-            Game_ScoreManager score = (Game_ScoreManager)ReflectionUtils.GetValue(GameControlManager.s_instance, "m_scoreManager");
+            var score = Game_ScoreManager.s_instance;
+            if (score == null)
+            {
+                LoggerInstance.Msg("Null score manager, skipping OnSongEnd");
+                return;
+            }
+
+            var info = GameControlManager.s_instance.InfoProvider;
+            if (info == null)
+            {
+                LoggerInstance.Msg("Null info provider, skipping OnSongEnd");
+                return;
+            }
+
             EventDataSongEnd songEndEvent = new EventDataSongEnd(
-                GameControlManager.s_instance.InfoProvider.TrackName,
-                GameControlManager.s_instance.InfoProvider.TotalPerfectNotes,
-                GameControlManager.s_instance.InfoProvider.TotalNormalNotes,
-                GameControlManager.s_instance.InfoProvider.TotalBadNotes,
-                GameControlManager.s_instance.InfoProvider.TotalFailNotes,
+                info.TrackName,
+                info.TotalPerfectNotes,
+                info.TotalNormalNotes,
+                info.TotalBadNotes,
+                info.TotalFailNotes,
                 score.MaxCombo);
 
             Send(new SynthRidersEvent<EventDataSongEnd>("SongEnd", songEndEvent));
@@ -203,7 +223,12 @@ namespace SynthRidersWebsockets
         
         private void OnNoteHit()
         {
-            Game_ScoreManager score = (Game_ScoreManager) ReflectionUtils.GetValue(GameControlManager.s_instance, "m_scoreManager");
+            var score = Game_ScoreManager.s_instance;
+            if (score == null)
+            {
+                LoggerInstance.Msg("Null score manager, skipping OnNoteHit");
+                return;
+            }
             
             EventDataNoteHit noteHitEvent = new EventDataNoteHit(
                 score.Score,
