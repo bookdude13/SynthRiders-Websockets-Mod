@@ -1,4 +1,4 @@
-﻿using System;
+﻿/*using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -10,11 +10,11 @@ using Microsoft.AspNetCore.SignalR.Client;
 
 namespace SynthRidersWebsockets
 {
-    internal class SREventsWebSocketServer : AbstractSRWebSocketCommon
+    internal class SignalR_SREventsWebSocketServer : AbstractSRWebSocketCommon
     {
         public static readonly string EventMessageChannelName = "ReceiveMessage";
 
-        public SREventsWebSocketServer(MelonLogger.Instance logger, string host, int port)
+        public SignalR_SREventsWebSocketServer(MelonLogger.Instance logger, string host, int port)
             : base(logger, host, port)
         {
         }
@@ -40,3 +40,4 @@ namespace SynthRidersWebsockets
         }
     }
 }
+*/

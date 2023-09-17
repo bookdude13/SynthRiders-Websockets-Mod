@@ -19,6 +19,8 @@ using MelonLoader;
 
 using SynthRidersWebsockets.Harmony;
 using SynthRidersWebsockets.Events;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.DependencyInjection;
 
 /*
 * Todo:
@@ -34,7 +36,9 @@ namespace SynthRidersWebsockets
     {
         public static WebsocketMod Instance;
         private static GameControlManager gameControlManager;
-        private static SREventsWebSocketServer webSocketServer;
+        //private static SignalR_SREventsWebSocketServer webSocketServer;
+        Raw_SREventsWebSocketServer webSocketServer;
+        private static IHost server;
 
         public static MelonPreferences_Category connectionCategory;
 
@@ -51,8 +55,23 @@ namespace SynthRidersWebsockets
             int port = connectionCategory.CreateEntry<int>("Port", 9000).Value;
 
             LoggerInstance.Msg("[Websocket] Starting Websocket server");
-            webSocketServer = new SREventsWebSocketServer(LoggerInstance, host, port);
-            await webSocketServer.StartAsync();
+            HostBuilder builder = new();
+            builder.UseContentRoot(Directory.GetCurrentDirectory());
+            server = builder
+                .ConfigureServices(services =>
+                {
+                    services.AddHostedService<Raw_SREventsWebSocketServer>(provider =>
+                    {
+                        return new Raw_SREventsWebSocketServer(LoggerInstance, host, port);
+                    });
+                })
+                .Build();
+
+            await server.RunAsync();
+            webSocketServer = server.Services.GetService<Raw_SREventsWebSocketServer>();
+
+            /*webSocketServer = new SREventsWebSocketServer(LoggerInstance, host, port);
+            await webSocketServer.StartAsync();*/
 
             // Patch _after_ the server is started and can handle messages
             RuntimePatch.PatchAll();
@@ -60,7 +79,7 @@ namespace SynthRidersWebsockets
 
         public override async void OnApplicationQuit()
         {
-            await webSocketServer?.StopAsync();
+            await server?.StopAsync();
         }
 
         public override void OnSceneWasLoaded(int buildIndex, string sceneName)
@@ -210,9 +229,9 @@ namespace SynthRidersWebsockets
             Send(new SynthRidersEvent<object>("FailSpecial", new object()));
         }
 
-        public async void Send<T>(SynthRidersEvent<T> outputEvent)
+        public  void Send<T>(SynthRidersEvent<T> outputEvent)
         {
-            await webSocketServer?.SendMessageAsync(JsonConvert.SerializeObject(outputEvent));
+            webSocketServer?.QueueMessage(JsonConvert.SerializeObject(outputEvent));
         }
     }
 }

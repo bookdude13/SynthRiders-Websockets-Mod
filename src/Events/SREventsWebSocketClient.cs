@@ -1,4 +1,4 @@
-﻿using System;
+﻿/*using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -19,7 +19,7 @@ namespace SynthRidersWebsockets.Events
             : base(logger, host, port)
         {
             this.eventHandler = eventHandler;
-            connection.On<string>(SREventsWebSocketServer.EventMessageChannelName, ReceiveMessage);
+            connection.On<string>(SignalR_SREventsWebSocketServer.EventMessageChannelName, ReceiveMessage);
         }
 
         public void ReceiveMessage(string messageJson)
@@ -70,3 +70,4 @@ namespace SynthRidersWebsockets.Events
         }
     }
 }
+*/

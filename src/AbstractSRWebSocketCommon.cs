@@ -1,4 +1,4 @@
-﻿using MelonLoader;
+﻿/*using MelonLoader;
 using Microsoft.AspNetCore.SignalR.Client;
 using System;
 using System.Collections.Generic;
@@ -19,7 +19,7 @@ namespace SynthRidersWebsockets
         public AbstractSRWebSocketCommon(MelonLogger.Instance logger, string host, int port)
         {
             this.logger = logger;
-            url = $"ws://{host}:{port}/";
+            url = $"http://{host}:{port}/";
             connection = new HubConnectionBuilder()
                 .WithUrl(url)
                 .WithAutomaticReconnect()
@@ -78,3 +78,4 @@ namespace SynthRidersWebsockets
         }
     }
 }
+*/
