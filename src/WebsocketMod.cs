@@ -34,7 +34,7 @@ namespace SynthRidersWebsockets
     {
         public static WebsocketMod Instance;
         private static GameControlManager gameControlManager;
-        private static IWebSocketServer webSocketServer;
+        private static SREventsWebSocketServer webSocketServer;
 
         public static MelonPreferences_Category connectionCategory;
 
@@ -44,20 +44,23 @@ namespace SynthRidersWebsockets
         private float lastPlayTimeEventMS = 0;
         private float currentPlayTimeMS = 0.0f;
 
-        public override void OnInitializeMelon() {
+        public override async void OnInitializeMelon() {
             Instance = this;
             connectionCategory = MelonPreferences.CreateCategory("Connection");
             string host = connectionCategory.CreateEntry<string>("Host", "localhost").Value;
             int port = connectionCategory.CreateEntry<int>("Port", 9000).Value;
+
+            LoggerInstance.Msg("[Websocket] Starting Websocket server");
+            webSocketServer = new SREventsWebSocketServer(LoggerInstance, host, port);
+            await webSocketServer.StartAsync();
+
+            // Patch _after_ the server is started and can handle messages
             RuntimePatch.PatchAll();
-            webSocketServer = new SignalRWebSocketServer(host, port);
-            webSocketServer.Start();
-            LoggerInstance.Msg("[Websocket] Started Websocket mod on " + host + ":" + port.ToString());
         }
-        
-        public override void OnApplicationQuit()
+
+        public override async void OnApplicationQuit()
         {
-            webSocketServer?.Stop();
+            await webSocketServer?.StopAsync();
         }
 
         public override void OnSceneWasLoaded(int buildIndex, string sceneName)
@@ -207,9 +210,9 @@ namespace SynthRidersWebsockets
             Send(new SynthRidersEvent<object>("FailSpecial", new object()));
         }
 
-        public void Send<T>(SynthRidersEvent<T> outputEvent)
+        public async void Send<T>(SynthRidersEvent<T> outputEvent)
         {
-            webSocketServer?.Send(JsonConvert.SerializeObject(outputEvent));
+            await webSocketServer?.SendMessageAsync(JsonConvert.SerializeObject(outputEvent));
         }
     }
 }
