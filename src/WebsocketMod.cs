@@ -34,6 +34,8 @@ namespace SynthRidersWebsockets
 {
     public class WebsocketMod : MelonMod
     {
+        private static readonly bool USE_TEST_CLIENT = true;
+
         public static WebsocketMod Instance;
         private static GameControlManager gameControlManager;
         //private static SignalR_SREventsWebSocketServer webSocketServer;
@@ -68,17 +70,18 @@ namespace SynthRidersWebsockets
                     {
                         return webSocketServer;
                     });
-                    services.AddHostedService(provider =>
+
+                    if (USE_TEST_CLIENT)
                     {
-                        return new SREventsWebSocketClient(LoggerInstance, host, port, eventHandler);
-                    });
+                        services.AddHostedService(provider =>
+                        {
+                            return new SREventsWebSocketClient(LoggerInstance, host, port, eventHandler);
+                        });
+                    }
                 })
                 .Build();
 
             await server.RunAsync();
-
-            /*webSocketServer = new SREventsWebSocketServer(LoggerInstance, host, port);
-            await webSocketServer.StartAsync();*/
 
             // Patch _after_ the server is started and can handle messages
             RuntimePatch.PatchAll();

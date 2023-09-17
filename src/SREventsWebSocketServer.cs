@@ -26,15 +26,21 @@ namespace SynthRidersWebsockets
 
         public void QueueMessage(string message)
         {
-            logger.Msg("QueueMessage server");
+            // In case we use this mod without any clients, limit the size of the queue
+            if (messagesToSend.Count > 100)
+            {
+                logger.Warning("Server message queue full; do you have a client receiving messages? Ignoring new message.");
+            }
+            else
+            {
+                messagesToSend.Enqueue(message);
+            }
 
-            messagesToSend.Enqueue(message);
-
-            // Let the sender pick it up
+            // Let the client receive messages
             sendWait.Set();
         }
 
-        protected override string NextMessageToSend(string clientId)
+        protected override string NextMessageToSend()
         {
             if (messagesToSend.IsEmpty)
             {

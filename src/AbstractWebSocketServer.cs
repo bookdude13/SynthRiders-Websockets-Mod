@@ -1,6 +1,8 @@
-﻿using MelonLoader;
+﻿using Il2CppSynth.Versus;
+using MelonLoader;
 using Microsoft.Extensions.Hosting;
 using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.WebSockets;
 using System.Text;
@@ -16,6 +18,7 @@ namespace SynthRidersWebsockets
         protected readonly MelonLogger.Instance logger;
         protected bool isConnected = false;
         protected EventWaitHandle sendWait = new EventWaitHandle(false, System.Threading.EventResetMode.ManualReset);
+        protected Dictionary<string, WebSocket> clients = new();
 
         private readonly string url;
         private readonly HttpListener httpListener;
@@ -38,10 +41,14 @@ namespace SynthRidersWebsockets
                 httpListener.Start();
                 logger.Msg("Started");
 
-                var _ = Task.Run(async () =>
+                // Start looking for new client connections
+                _ = Task.Run(async () =>
                 {
                     await ConnectionLoop(cancellationToken);
                 }, cancellationToken);
+
+                // Set up sending to all connections
+                _ = Task.Run(async () => await SendAllLoop(cancellationToken));
 
                 return Task.CompletedTask;
             }
@@ -83,17 +90,17 @@ namespace SynthRidersWebsockets
 
                     string clientId = Guid.NewGuid().ToString();
                     WebSocket webSocket = webSocketContext.WebSocket;
+                    clients.Add(clientId, webSocket);
 
-                    logger.Msg($"Starting server handlers for new client {clientId}");
-                    _ = Task.Run(async () => await SendLoop(clientId, webSocket, cancellationToken));
+                    logger.Msg($"Starting server receiver for new client {clientId}");
                     _ = Task.Run(async () => await ReceiveLoop(clientId, webSocket, cancellationToken));
                 }
             }
         }
 
-        private async Task SendLoop(string clientId, WebSocket webSocket, System.Threading.CancellationToken cancellationToken)
+        private async Task SendAllLoop(CancellationToken cancellationToken)
         {
-            while (webSocket.State == WebSocketState.Open && !cancellationToken.IsCancellationRequested)
+            while (!cancellationToken.IsCancellationRequested)
             {
                 try
                 {
@@ -106,7 +113,7 @@ namespace SynthRidersWebsockets
                     // Send all available messages
                     while (true)
                     {
-                        var nextMessage = NextMessageToSend(clientId);
+                        var nextMessage = NextMessageToSend();
                         if (nextMessage == null)
                         {
                             sendWait.Reset();
@@ -115,19 +122,41 @@ namespace SynthRidersWebsockets
                         }
                         else
                         {
-                            //logger.Msg($"Sending message '{nextMessage}' to client {clientId}");
-                            await webSocket.SendAsync(
-                                Encoding.ASCII.GetBytes(nextMessage),
-                                WebSocketMessageType.Text,
-                                endOfMessage: true,
-                                cancellationToken);
+                            foreach (var client in clients)
+                            {
+                                logger.Msg($"Sending message to client {client.Key}");
+                                await SendToClient(client.Key, nextMessage, cancellationToken);
+                            }
                         }
                     }
                 }
                 catch (Exception ex)
                 {
-                    logger.Error($"Failure in send loop for client {clientId}", ex);
+                    logger.Error("Failure in send loop", ex);
                 }
+            }
+        }
+
+        private async Task SendToClient(string clientId, string message, CancellationToken cancellationToken)
+        {
+            var webSocket = clients[clientId];
+            if (webSocket.State != WebSocketState.Open)
+            {
+                logger.Warning("Web socket not open, not sending message");
+                return;
+            }
+
+            try
+            {
+                await webSocket.SendAsync(
+                                Encoding.ASCII.GetBytes(message),
+                                WebSocketMessageType.Text,
+                                endOfMessage: true,
+                                cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                logger.Error($"Failure to send message to client {clientId}", ex);
             }
         }
 
@@ -175,7 +204,7 @@ namespace SynthRidersWebsockets
             return Task.CompletedTask;
         }
 
-        abstract protected string NextMessageToSend(string clientId);
+        abstract protected string NextMessageToSend();
         abstract protected void HandleReceive(string clientId, string message);
     }
 }
