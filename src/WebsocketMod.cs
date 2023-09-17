@@ -5,8 +5,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using WebSocketSharp;
-using WebSocketSharp.Server;
 
 using Newtonsoft.Json;
 
@@ -36,6 +34,7 @@ namespace SynthRidersWebsockets
     {
         public static WebsocketMod Instance;
         private static GameControlManager gameControlManager;
+        private static IWebSocketServer webSocketServer;
 
         public static MelonPreferences_Category connectionCategory;
 
@@ -45,19 +44,20 @@ namespace SynthRidersWebsockets
         private float lastPlayTimeEventMS = 0;
         private float currentPlayTimeMS = 0.0f;
 
-        public override void OnApplicationStart() {
+        public override void OnInitializeMelon() {
             Instance = this;
             connectionCategory = MelonPreferences.CreateCategory("Connection");
             string host = connectionCategory.CreateEntry<string>("Host", "localhost").Value;
             int port = connectionCategory.CreateEntry<int>("Port", 9000).Value;
             RuntimePatch.PatchAll();
-            Websocket.Start($"{host}:{port}");
-            LoggerInstance.Msg("[Websocket] Started Weboscket mod on " + host + ":" + port.ToString());
+            webSocketServer = new SignalRWebSocketServer(host, port);
+            webSocketServer.Start();
+            LoggerInstance.Msg("[Websocket] Started Websocket mod on " + host + ":" + port.ToString());
         }
         
         public override void OnApplicationQuit()
         {
-            Websocket.Stop();
+            webSocketServer?.Stop();
         }
 
         public override void OnSceneWasLoaded(int buildIndex, string sceneName)
@@ -209,64 +209,7 @@ namespace SynthRidersWebsockets
 
         public void Send<T>(SynthRidersEvent<T> outputEvent)
         {
-            if (Websocket.server == null)
-            {
-                return;
-            }
-
-            Websocket.Send(JsonConvert.SerializeObject(outputEvent));
-        }
-
-        public class Websocket
-        {
-            public static WebSocketServer server;
-            public static EventSocket eventSocket;
-
-            public static void Start(string host)
-            {
-                Instance.LoggerInstance.Msg($"[Websocket] Starting socket server on: ws://{host}/");
-                server = new WebSocketServer("ws://" + host);
-                server.AddWebSocketService<EventSocket>("/");
-                server.Start();
-            }
-
-            public static void Stop()
-            {
-                if (server != null) server.Stop();
-            }
-
-            public static void Send(string message)
-            {
-                if (server == null || eventSocket == null) return;
-                eventSocket.SendBroadcast(message);
-            }
-
-            public class EventSocket : WebSocketBehavior
-            {
-                public void SendBroadcast(string msg)
-                {
-                    Sessions.Broadcast(msg);
-                }
-
-                protected override void OnOpen()
-                {
-                    if (eventSocket == null) eventSocket = this;
-                }
-
-                protected override void OnError(WebSocketSharp.ErrorEventArgs e)
-                {
-                    if (eventSocket == null) eventSocket = this;
-                }
-
-                protected override void OnClose(CloseEventArgs e)
-                {
-                    if (eventSocket == null) eventSocket = this;
-                }
-
-                protected override void OnMessage(MessageEventArgs e)
-                {
-                }
-            }
+            webSocketServer?.Send(JsonConvert.SerializeObject(outputEvent));
         }
     }
 }

@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using WebSocketSharp;
+﻿/*using System;
 using MelonLoader;
 using Newtonsoft.Json;
 
@@ -12,7 +7,7 @@ namespace SynthRidersWebsockets.Events
     public class SynthRidersEventsManager
     {
         private readonly MelonLogger.Instance logger;
-        private readonly WebSocket socket;
+        private readonly IWebSocketClient socket;
         private bool isConnected = false;
         private ISynthRidersEventHandler eventHandler;
 
@@ -133,3 +128,4 @@ namespace SynthRidersWebsockets.Events
         }
     }
 }
+*/
