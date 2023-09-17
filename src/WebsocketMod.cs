@@ -10,8 +10,9 @@ using WebSocketSharp.Server;
 
 using Newtonsoft.Json;
 
-using synth;
-using Synth.Utils;
+using Il2Cpp;
+using Il2Cppsynth;
+using Il2CppSynth.Utils;
 
 using UnityEngine;
 using UnityEngine.Events;
@@ -103,19 +104,19 @@ namespace SynthRidersWebsockets
                 LoggerInstance.Msg("Adding stage events!");
                 StageEvents stageEvents = new StageEvents();
                 stageEvents.OnSongStart = new UnityEvent();
-                stageEvents.OnSongStart.AddListener(OnSongStart);
+                stageEvents.OnSongStart.AddListener(new System.Action(() => OnSongStart()));
                 stageEvents.OnSongEnd = new UnityEvent();
-                stageEvents.OnSongEnd.AddListener(OnSongEnd);
+                stageEvents.OnSongEnd.AddListener(new System.Action(() => OnSongEnd()));
                 stageEvents.OnNoteHit = new UnityEvent();
-                stageEvents.OnNoteHit.AddListener(OnNoteHit);
+                stageEvents.OnNoteHit.AddListener(new System.Action(() => OnNoteHit()));
                 stageEvents.OnNoteFail = new UnityEvent();
-                stageEvents.OnNoteFail.AddListener(OnNoteFail);
+                stageEvents.OnNoteFail.AddListener(new System.Action(() => OnNoteFail()));
                 stageEvents.OnEnterSpecial = new UnityEvent();
-                stageEvents.OnEnterSpecial.AddListener(OnEnterSpecial);
+                stageEvents.OnEnterSpecial.AddListener(new System.Action(() => OnEnterSpecial()));
                 stageEvents.OnCompleteSpecial = new UnityEvent();
-                stageEvents.OnCompleteSpecial.AddListener(OnCompleteSpecial);
+                stageEvents.OnCompleteSpecial.AddListener(new System.Action(() => OnCompleteSpecial()));
                 stageEvents.OnFailSpecial = new UnityEvent();
-                stageEvents.OnFailSpecial.AddListener(OnFailSpecial);
+                stageEvents.OnFailSpecial.AddListener(new System.Action(() => OnFailSpecial()));
                 GameControlManager.UpdateStageEventList(stageEvents);
             }
             catch (Exception e)

@@ -2,8 +2,7 @@
 using System.Collections.Generic;
 using System.Reflection;
 using HarmonyLib;
-
-using synth;
+using Il2Cpp;
 
 namespace SynthRidersWebsockets.Harmony
 {
