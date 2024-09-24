@@ -166,7 +166,7 @@ namespace SynthRidersWebsockets
             // It'd be better to get this directly from within the game, but it seems
             // artwork isn't populated in the info provider.  This seems to work well enough
             // but do feel free to implement a better option if available.
-            string albumArtPath = Directory.GetCurrentDirectory() + "\\SongStatusImage.png";
+            string albumArtPath = Directory.GetCurrentDirectory() + "\\SynthRidersUC\\SongStatusImage.png";
             string albumArtEncoded = null;
 
             if (File.Exists(albumArtPath))
@@ -188,7 +188,23 @@ namespace SynthRidersWebsockets
                 info.Beatmapper,
                 GameControlManager.CurrentTrackStatic.Song.clip.length,
                 GameControlManager.CurrentTrackStatic.TrackBPM,
-                albumArtEncoded
+                albumArtEncoded,
+                GameControlManager.NotLoseMode,
+                GameControlManager.s_instance.SpinModeEnabled,
+                Game_InfoProvider.SpinModeTypeToInt,
+                Game_InfoProvider.SpinChallengeModeEnabled,
+                GameControlManager.s_instance.SpiralModeEnabled,
+                ((int)Game_InfoProvider.CurrentSpiralIntensity),
+                Game_InfoProvider.VanishMode > 0 ? true : false,
+                GameControlManager.AllowObstacles,
+                GameControlManager.SpeedSelected,
+                GameControlManager.SuddenDeath > 0 ? true : false,
+                GameControlManager.RainbowMode,
+                GameControlManager.NoteSize,
+                GameControlManager.OneHandMode,
+                GameControlManager.s_instance.IsExperienceStage,
+                GameControlManager.NoteNeedBePunched,
+                Game_InfoProvider.HoloMode
             );
 
             Send(new SynthRidersEvent<object>("SongStart", songStartEvent));
