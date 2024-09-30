@@ -12,6 +12,11 @@ using EventWaitHandle = System.Threading.EventWaitHandle;
 
 namespace SynthRidersWebsockets
 {
+    public class ClientConnectedEventArgs : EventArgs
+    {
+        public string clientId { get; set; }
+    }
+
     // Heavily inspired by https://stackoverflow.com/questions/30490140/how-to-work-with-system-net-websockets-without-asp-net
     internal abstract class AbstractWebSocketServer : IHostedService
     {
@@ -23,6 +28,8 @@ namespace SynthRidersWebsockets
         private readonly string url;
         private readonly HttpListener httpListener;
 
+        public event EventHandler<ClientConnectedEventArgs> ClientConnected;
+
         public AbstractWebSocketServer(MelonLogger.Instance logger, string host, int port)
         {
             this.logger = logger;
@@ -31,6 +38,11 @@ namespace SynthRidersWebsockets
             httpListener = new();
             httpListener.Prefixes.Add(url);
             logger.Msg($"Listener created for '{url}'");
+        }
+
+        protected virtual void OnClientConnected(ClientConnectedEventArgs e)
+        {
+            ClientConnected?.Invoke(this, e);
         }
 
         public Task StartAsync(CancellationToken cancellationToken)
@@ -92,9 +104,17 @@ namespace SynthRidersWebsockets
                     string clientId = Guid.NewGuid().ToString();
                     WebSocket webSocket = webSocketContext.WebSocket;
                     clients.Add(clientId, webSocket);
+                    
+                    logger.Msg($"Starting server receiver for new client {clientId} from {context.Request.RemoteEndPoint.Address}");
+                    ClientConnectedEventArgs args = new ClientConnectedEventArgs();
+                    args.clientId = clientId;
+                    
+                    // Trigger a 'connected' event here that the mod itself can choose to emit events for
+                    // ex: when connected, emit the SongStart event so the client can get 'caught up' immediately.
+                    this.OnClientConnected(args);
 
-                    logger.Msg($"Starting server receiver for new client {clientId}");
                     _ = Task.Run(async () => await ReceiveLoop(clientId, webSocket, cancellationToken));
+                    logger.Msg($"Connection setup complete for client {clientId}");
                 }
             }
         }
