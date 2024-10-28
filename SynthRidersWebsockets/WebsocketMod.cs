@@ -62,6 +62,7 @@ namespace SynthRidersWebsockets
 
             LoggerInstance.Msg("[Websocket] Starting Websocket server");
             webSocketServer = new SREventsWebSocketServer(LoggerInstance, host, port);
+            webSocketServer.ClientConnected += this.ClientConnected;
 
             HostBuilder builder = new();
             builder.UseContentRoot(Directory.GetCurrentDirectory());
@@ -82,13 +83,33 @@ namespace SynthRidersWebsockets
                     }
                 })
                 .Build();
-
+            
             // Kick off server in background
             _ = server.RunAsync();
 
             // Patch _after_ the server is started and can handle messages
             LoggerInstance.Msg("Applying Harmony patches");
             RuntimePatch.PatchAll();
+        }
+
+        protected void ClientConnected(object sender, ClientConnectedEventArgs e)
+        {
+            // NOTE: At present, this just broadcasts to all connected sockets as it was easier to implement.
+            // As an optimization, it should emit this only to the newly-connected socket.
+            if (gameControlManager != null && gameControlManager == GameControlManager.s_instance)
+            {
+                // We're "in-game", so let the client know about the current song data.
+                LoggerInstance.Msg("ClientConnected: Emitting OnSongStart");
+                OnSongStart();
+            } else
+            {
+                // Emit the "Return to Menu" event on connect.  This is to cover a state where
+                // a websocket client lost a connection while playing and reconnected when it wasn't.
+                // Prevents a state of a client showing song data when it shouldn't.
+                LoggerInstance.Msg("ClientConnected: Emitting return to menu");
+                EmitReturnToMenuEvent();
+            }
+            
         }
 
         public override async void OnApplicationQuit()
