@@ -50,6 +50,7 @@ namespace SynthRidersWebsockets
          */
         private float lastPlayTimeEventMS = 0;
         private float currentPlayTimeMS = 0.0f;
+        private float healthPercent = 1.0f;
 
         public override void OnInitializeMelon() {
             Instance = this;
@@ -266,13 +267,13 @@ namespace SynthRidersWebsockets
                 LoggerInstance.Msg("Null score manager, skipping OnNoteHit");
                 return;
             }
-            
+
             EventDataNoteHit noteHitEvent = new EventDataNoteHit(
                 score.Score,
                 score.CurrentCombo,
                 score.NotesCompleted,
                 score.TotalMultiplier,
-                LifeBarHelper.GetScalePercent(),
+                this.healthPercent,
                 currentPlayTimeMS
             );
 
@@ -283,7 +284,7 @@ namespace SynthRidersWebsockets
         {
             EventDataNoteMiss noteMissEvent = new EventDataNoteMiss(
                 GameControlManager.s_instance.ScoreManager.TotalMultiplier,
-                LifeBarHelper.GetScalePercent(),
+                this.healthPercent,
                 currentPlayTimeMS
             );
 
@@ -303,6 +304,21 @@ namespace SynthRidersWebsockets
         private void OnFailSpecial()
         {
             Send(new SynthRidersEvent<object>("FailSpecial", new object()));
+        }
+
+        public void UpdateHealth(float health)
+        {
+            // Because the game might return a number greater than one (sometimes ex: 1.0004172),
+            // We cap it at 1 for 100%.
+            if (health > 1.0) {
+                this.healthPercent = 1;
+            } else if (health < 0.0)
+            {
+                this.healthPercent = 0;
+            } else
+            {
+                this.healthPercent = health;
+            }
         }
 
         public  void Send<T>(SynthRidersEvent<T> outputEvent)
