@@ -13,6 +13,9 @@ namespace SynthRidersWebsockets.Events
         void OnPlayTime(EventDataPlayTime data);
         void OnNoteHit(EventDataNoteHit data);
         void OnNoteMiss(EventDataNoteMiss data);
+        void OnEnterSpecial();
+        void OnCompleteSpecial();
+        void OnFailSpecial();
         void OnSceneChange(EventDataSceneChange data);
         void OnReturnToMenu();
     }

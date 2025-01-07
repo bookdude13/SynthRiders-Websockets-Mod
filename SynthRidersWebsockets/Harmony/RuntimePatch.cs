@@ -2,8 +2,7 @@
 using System.Collections.Generic;
 using System.Reflection;
 using HarmonyLib;
-
-using synth;
+using Il2Cpp;
 
 namespace SynthRidersWebsockets.Harmony
 {
@@ -52,5 +51,17 @@ public class GameControlManagerReturnToMenuPatch
     public static void PostFix()
     {
         SynthRidersWebsockets.WebsocketMod.Instance.EmitReturnToMenuEvent();
+    }
+}
+
+// For capturing the player's current health, as the original LifeBarHelper.GetScalePercent()
+// doesn't seem to return the correct value anymore (always zero)
+[HarmonyPatch(typeof(Game_ScoreManager), "UpdateHealthBar")]
+public class GameScoreManagerUpdateHealthBarPatch
+{
+    [HarmonyPostfix]
+    public static void PostFix(float health)
+    {
+        SynthRidersWebsockets.WebsocketMod.Instance.UpdateHealth(health);
     }
 }
