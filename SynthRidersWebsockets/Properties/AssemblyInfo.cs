@@ -15,5 +15,5 @@ using SynthRidersWebsockets;
 // The following GUID is for the ID of the typelib if this project is exposed to COM
 [assembly: Guid("d7e6917c-a708-4b3c-aa44-685765f620de")]
 
-[assembly: MelonInfo(typeof(WebsocketMod), "SynthRider Websocket Integration", "2.0.0", "KK964+bookdude13")]
+[assembly: MelonInfo(typeof(WebsocketMod), "SynthRider Websocket Integration", "2.0.1", "KK964+bookdude13")]
 [assembly: MelonGame("Kluge Interactive", "SynthRiders")] 

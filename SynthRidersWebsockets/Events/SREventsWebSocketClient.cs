@@ -51,6 +51,21 @@ namespace SynthRidersWebsockets.Events
                     var noteMiss = JsonConvert.DeserializeObject<SynthRidersEvent<EventDataNoteMiss>>(messageJson);
                     eventHandler.OnNoteMiss(noteMiss.data);
                 }
+                else if (genericEvent.eventType == "EnterSpecial")
+                {
+                    // No extra data in payload
+                    eventHandler.OnEnterSpecial();
+                }
+                else if (genericEvent.eventType == "CompleteSpecial")
+                {
+                    // No extra data in payload
+                    eventHandler.OnCompleteSpecial();
+                }
+                else if (genericEvent.eventType == "FailSpecial")
+                {
+                    // No extra data in payload
+                    eventHandler.OnFailSpecial();
+                }
                 else if (genericEvent.eventType == "SceneChange")
                 {
                     var sceneChange = JsonConvert.DeserializeObject<SynthRidersEvent<EventDataSceneChange>>(messageJson);

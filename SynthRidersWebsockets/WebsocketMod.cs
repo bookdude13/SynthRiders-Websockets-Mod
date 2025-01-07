@@ -35,7 +35,8 @@ namespace SynthRidersWebsockets
 {
     public class WebsocketMod : MelonMod
     {
-        private static readonly bool USE_TEST_CLIENT = true;
+        // If set, creates a client as well that logs out messages as they are received
+        private static readonly bool USE_TEST_CLIENT = false;
 
         public static WebsocketMod Instance;
         private static GameControlManager gameControlManager;
@@ -58,8 +59,11 @@ namespace SynthRidersWebsockets
             string host = connectionCategory.CreateEntry<string>("Host", "localhost").Value;
             int port = connectionCategory.CreateEntry<int>("Port", 9000).Value;
 
-            // TODO remove, just for testing
-            var eventHandler = new LoggingSynthRidersEventHandler(LoggerInstance);
+            if (USE_TEST_CLIENT)
+            {
+                var eventHandler = new LoggingSynthRidersEventHandler(LoggerInstance);
+                testClient = new SREventsWebSocketClient(LoggerInstance, host, port, eventHandler);
+            }
 
             LoggerInstance.Msg("[Websocket] Starting Websocket server");
             webSocketServer = new SREventsWebSocketServer(LoggerInstance, host, port);
@@ -75,7 +79,7 @@ namespace SynthRidersWebsockets
                         return webSocketServer;
                     });
 
-                    if (USE_TEST_CLIENT)
+                    if (USE_TEST_CLIENT && testClient != null)
                     {
                         services.AddHostedService(provider =>
                         {
