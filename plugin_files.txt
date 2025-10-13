@@ -1,0 +1,3 @@
+SRWebsocketsFixDepsPlugin.dll,Plugins/SRWebsocketsFixDepsPlugin.dll
+Microsoft.Extensions.DependencyInjection.Abstractions.dll,Plugins/Microsoft.Extensions.DependencyInjection.Abstractions.dll.disabled
+Microsoft.Extensions.Configuration.dll,Plugins/Microsoft.Extensions.Configuration.dll.disabled
