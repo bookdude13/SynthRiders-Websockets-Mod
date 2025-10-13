@@ -6,6 +6,8 @@ This is a mod for [SynthRiders](https://synthridersvr.com/). It allows you to co
 
 NOTE: Until MelonLoader [updates their base .NET libraries](https://github.com/LavaGang/MelonLoader/issues/1000), using this mod will require downloading the additional plugin SRWebsockertsFixDepsPlugin (available in the [Releases](https://github.com/bookdude13/SynthRiders-Websockets-Mod/releases))
 
+NOTE: If updating from an older version, consider deleting all dlls from your Mods folder and re-installing mods, so extra conflicting dependencies are not loaded. You can reinstall MelonLoader to get the same effect.
+
 ## Setup
 
 To install you need to either download a release, or build the mod yourself.
