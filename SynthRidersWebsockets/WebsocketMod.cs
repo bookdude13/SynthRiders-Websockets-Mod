@@ -53,7 +53,8 @@ namespace SynthRidersWebsockets
         private float currentPlayTimeMS = 0.0f;
         private float healthPercent = 1.0f;
 
-        public override void OnInitializeMelon() {
+        public override void OnInitializeMelon()
+        {
             Instance = this;
             connectionCategory = MelonPreferences.CreateCategory("Connection");
             string host = connectionCategory.CreateEntry<string>("Host", "localhost").Value;

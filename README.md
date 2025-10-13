@@ -4,6 +4,10 @@
 
 This is a mod for [SynthRiders](https://synthridersvr.com/). It allows you to connect to the websocket server and receive updates about the game.
 
+NOTE: Until MelonLoader [updates their base .NET libraries](https://github.com/LavaGang/MelonLoader/issues/1000), using this mod will require downloading the additional plugin SRWebsockertsFixDepsPlugin (available in the [Releases](https://github.com/bookdude13/SynthRiders-Websockets-Mod/releases))
+
+NOTE: If updating from an older version, consider deleting all dlls from your Mods folder and re-installing mods, so extra conflicting dependencies are not loaded. You can reinstall MelonLoader to get the same effect.
+
 ## Setup
 
 To install you need to either download a release, or build the mod yourself.
@@ -15,18 +19,9 @@ To install you need to either download a release, or build the mod yourself.
 
 ### Download
 
-1. Download the latest release from [GitHub](https://github.com/KK964/SynthRiders-Websockets-Mod/releases)
-2. Extract the zip file
-3. Copy the dlls to your SynthRiders MelonLoader Mods folder (typically a folder called `Mods` in your SynthRiders installation.  If you see a text file named "PLACE MODS HERE.txt", you're in the right place.)
-
-### Build
-
-1. Clone the repository
-2. Inside visual studio, open `/src` as the project
-3. Build the project
-4. The resulting dll will be in `/src/bin/Debug/` as `SynthRidersWebsockets.dll`
-5. Copy the dll to your SynthRiders MelonLoader Mods folder
-6. Copy `websocket-sharp.dll` to the Mods folder
+1. Download the latest release from [GitHub](https://github.com/bookdude13/SynthRiders-Websockets-Mod/releases)
+2. Extract the zip file(s)
+3. Copy the Mods and Plugins folders into the SynthRiders install directory (which copies the dlls inside into the proper locations within Mods/ and Plugins/, respectively)
 
 ### MelonPreferences.cfg
 
