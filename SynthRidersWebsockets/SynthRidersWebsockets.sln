@@ -7,9 +7,6 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SynthRidersWebsocketsTests", "..\tests\SynthRidersWebsocketsTests.csproj", "{F3C3F349-97D4-416A-AF7A-375BD17A2407}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SRWebsocketsFixDepsPlugin", "..\SRWebsocketsFixDepsPlugin\SRWebsocketsFixDepsPlugin.csproj", "{9BD8C830-67AE-481D-BA94-F27B1DBBAE4F}"
-	ProjectSection(ProjectDependencies) = postProject
-		{D7E6917C-A708-4B3C-AA44-685765F620DE} = {D7E6917C-A708-4B3C-AA44-685765F620DE}
-	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
